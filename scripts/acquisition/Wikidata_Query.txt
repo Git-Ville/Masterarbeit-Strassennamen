@@ -1,0 +1,96 @@
+SELECT  
+  ?item 
+  ?itemLabel 
+  ?itemDescription 
+  ?coordinate 
+  ?instance_ofLabel
+  (GROUP_CONCAT(DISTINCT ?named_after; separator=",") AS ?named_afters)
+  ?named_afterLabel
+  (GROUP_CONCAT(DISTINCT ?named_afterDescription; separator=",") AS ?named_afterDescriptions)
+  (GROUP_CONCAT(DISTINCT ?named_after_instance_ofLabel; separator=",") AS ?named_after_instance_ofLabels)
+  ?named_after_genderLabel
+  (GROUP_CONCAT(DISTINCT ?postal_code; separator=", ") AS ?postal_codes)
+  ?length
+  ?inception
+  ?place_of_birth
+  ?place_of_death
+  (GROUP_CONCAT(DISTINCT ?citizenship; separator=",") AS ?citizenships)
+  (GROUP_CONCAT(DISTINCT ?occupation; separator=", ") AS ?occupations)
+  (GROUP_CONCAT(DISTINCT ?birth_year; separator=", ") AS ?birth_years)
+  (GROUP_CONCAT(DISTINCT ?death_year; separator=", ") AS ?death_years)
+
+WHERE {    
+  ?item (wdt:P131/wdt:P279*) wd:Q1731.                   # liegt in Verwaltungseinheit Dresden
+  VALUES ?instance_of { 
+    wd:Q79007      # Innerortstraße
+    wd:Q21000333   # Einkaufsstraße 
+    wd:Q174782     # Platz
+  } 
+ 
+  ?item wdt:P31 ?instance_of. # ist Straße oder Platz  
+ 
+  OPTIONAL{?item wdt:P138 ?named_after} # benannt nach
+  
+  OPTIONAL{?item wdt:P138 ?named_after. #Benennungskategorie
+          ?named_after wdt:P31 ?named_after_instance_of.
+          }
+  
+   OPTIONAL{?item wdt:P138 ?named_after. #Geschlecht
+          ?named_after wdt:P21 ?named_after_gender.
+          }
+
+  # Wenn nach Person benannt, Beruf extrahieren
+  OPTIONAL {
+    ?item wdt:P138 ?named_after.
+    ?named_after wdt:P106 ?occupation_entity.
+    ?occupation_entity rdfs:label ?occupation. 
+    FILTER(LANG(?occupation) = "de")
+  }
+  
+ # Wenn nach Person benannt, Geburtsjahr extrahieren
+  OPTIONAL {
+    ?item wdt:P138 ?named_after.
+    ?named_after wdt:P569 ?birth_date.
+    BIND(YEAR(?birth_date) AS ?birth_year)
+  } 
+   
+  # Wenn nach Person benannt, Sterbejahr extrahieren
+  OPTIONAL {
+    ?item wdt:P138 ?named_after.
+    ?named_after wdt:P570 ?death_date.
+    BIND(YEAR(?death_date) AS ?death_year)
+    }
+  
+   # Wenn nach Person benannt, Geburtsort extrahieren
+  OPTIONAL {
+    ?item wdt:P138 ?named_after.
+    ?named_after wdt:P19 ?place_of_birth_entity.
+    ?place_of_birth_entity rdfs:label ?place_of_birth. 
+    FILTER(LANG(?place_of_birth) = "de")
+  }
+  
+     # Wenn nach Person benannt, Sterbeort extrahieren
+  OPTIONAL {
+    ?item wdt:P138 ?named_after.
+    ?named_after wdt:P20 ?place_of_death_entity.
+    ?place_of_death_entity rdfs:label ?place_of_death. 
+    FILTER(LANG(?place_of_death) = "de")
+  }
+  
+       # Wenn nach Person benannt, Staatsbürgerschaft
+  OPTIONAL {
+    ?item wdt:P138 ?named_after.
+    ?named_after wdt:P27 ?citizenship_entity.
+    ?citizenship_entity rdfs:label ?citizenship. 
+    FILTER(LANG(?citizenship) = "de")
+  }
+  
+  OPTIONAL{?item wdt:P625 ?coordinate.} # Koordinate für Kartendarstellung auslesen
+  OPTIONAL{?item wdt:P281 ?postal_code.} # Postleitzahl
+  Optional{?item wdt:P2043 ?length.} #Länge
+  Optional{?item wdt:P571 ?inception.} #Entstehung
+  
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en,[AUTO_LANGUAGE]". }
+}
+GROUP BY ?item ?itemLabel ?itemDescription ?coordinate ?instance_ofLabel ?named_afters ?named_afterLabel ?named_afterDescription ?named_after_instance_ofLabel ?named_after_genderLabel ?occupations ?citizenships ?place_of_birth ?birth_years ?place_of_death ?death_years ?postal_codes ?length ?inception
+
