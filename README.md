@@ -11,4 +11,4 @@ Die erzeugten Karten können im Ordner 'results' eingesehen und heruntergeladen 
 
 Die erzeugten Diagramme befinden sich im Ordner 'results/charts'. Einfache Diagramme sind in im Ordner 'results/charts/bar_charts' zu finden. Diagramme, welche verschiedene Stadtteile vergleichen im Ordner "results/charts/bar_charts_district_comparison'. 
 
-Die Boxplot-Diagramme der Distanzanalyse können im Ordner 'results/charts/boxplots' eingesehen werde.
+Die Boxplot-Diagramme der Distanzanalyse können im Ordner 'results/charts/boxplots' eingesehen werden.
